@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+      id="com.ironsmile.cordova.mediaevents"
+      version="0.0.1">
+    <name>Media Events</name>
+    <description>Media events for android</description>
+    <license>Apache 2.0</license>
+    <keywords>media,events,noisy,audio,focus</keywords>
+    <repo>https://github.com/ironsmile/com.ironsmile.cordova.mediaevents.git</repo>
+    <issue>https://github.com/ironsmile/com.ironsmile.cordova.mediaevents/issues</issue>
+
+    <js-module src="www/media_events.js" name="MediaEvents">
+        <clobbers target="navigator.mediaevents" />
+    </js-module>
+    
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="MediaEvents" >
+                <param name="android-package" value="com.ironsmile.cordova.mediaevents.MediaEventListener"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/android/MediaEventListener.java" target-dir="src/com/ironsmile/cordova/mediaevents" />
+    </platform>
+
+</plugin>
