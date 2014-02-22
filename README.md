@@ -9,10 +9,10 @@ Currently implemented events:
 
 Events that will be implemented in the future:
 
-* **focusgain** - when your application has received the audio focus. You can now use the audio freely.
-* **focusloss** - when your app has lost the audio focus. Stop audio playback and cleanup all associated resourced.
-* **focuslosstransient** - When your app has lost the audio focus for very short amount of time. Stop audio playback but you can keep media resourced loaded.
-* **focuslosstransientcanduck** - You app has lost audio focus but it is acceptable for it to continue playing at lower volume.
+* **audiofocusgain** - when your application has received the audio focus. You can now use the audio freely.
+* **audiofocusloss** - when your app has lost the audio focus. Stop audio playback and cleanup all associated resourced.
+* **audiofocuslosstransient** - When your app has lost the audio focus for very short amount of time. Stop audio playback but you can keep media resourced loaded.
+* **audiofocuslosstransientcanduck** - You app has lost audio focus but it is acceptable for it to continue playing at lower volume.
 
 
 Platforms
@@ -20,7 +20,7 @@ Platforms
 
 * Android
 
-For the moment I do not think to implement it for any other platform.
+For the moment I do not think to implement it for any other platform. Pull requests with implementation for other platforms are welcome, though!
 
 
 Install
