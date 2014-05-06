@@ -38,11 +38,47 @@ import android.content.IntentFilter;
 import android.util.Log;
 import android.media.AudioManager;
 
+
 public class MediaEventListener extends CordovaPlugin {
 
     private static final String LOG_TAG = "MediaEvents";
 
     BroadcastReceiver receiver;
+
+    private class FocusListener implements AudioManager.OnAudioFocusChangeListener {
+
+        AudioManager audioManager;
+
+        public FocusListener (Context ctx) {
+            this.audioManager = (AudioManager)ctx.getSystemService(Context.AUDIO_SERVICE);
+            int result = this.audioManager.requestAudioFocus(this,
+                AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN);
+
+            if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                sendFocusEvent(AudioManager.AUDIOFOCUS_LOSS);
+            }
+        }
+
+        @Override
+        public void onAudioFocusChange (int focusChange) {
+            sendFocusEvent(focusChange);
+        }
+
+        public void abandonFocus() {
+            if (this.audioManager != null) {
+                this.audioManager.abandonAudioFocus(this);
+                this.audioManager = null;                
+            }
+        }
+
+        public void onDestroy() {
+            abandonFocus();
+        }
+    }
+
+    FocusListener focusListener;
+    
 
     private CallbackContext eventCallbackContext = null;
 
@@ -51,6 +87,7 @@ public class MediaEventListener extends CordovaPlugin {
      */
     public MediaEventListener() {
         this.receiver = null;
+        this.focusListener = null;  
     }
 
     /**
@@ -72,7 +109,7 @@ public class MediaEventListener extends CordovaPlugin {
 
             // We need to listen to audio events
             IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+            intentFilter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
 
             if (this.receiver == null) {
                 this.receiver = new BroadcastReceiver() {
@@ -82,6 +119,11 @@ public class MediaEventListener extends CordovaPlugin {
                     }
                 };
                 cordova.getActivity().registerReceiver(this.receiver, intentFilter);
+            }
+
+            if (this.focusListener == null) {
+                Context ctx = cordova.getActivity().getBaseContext();
+                this.focusListener = this.new FocusListener(ctx);
             }
 
             // Don't return any result now, since status results will be sent when 
@@ -131,6 +173,10 @@ public class MediaEventListener extends CordovaPlugin {
                         e.getMessage(), e);
             }
         }
+        if (this.focusListener != null) {
+            this.focusListener.abandonFocus();
+            this.focusListener = null;
+        }
     }
 
     /**
@@ -157,6 +203,39 @@ public class MediaEventListener extends CordovaPlugin {
      */
     private void sendMediaEvent(Intent mediaEventIntent) {
         sendUpdate(this.constructMediaEvent(mediaEventIntent), true);
+    }
+
+    /**
+     * Updates the JavaScript side with new audio focus event
+     *
+     * @param focusEvent the received event
+     * @return
+     */
+    private void sendFocusEvent(int focusEvent) {
+       JSONObject obj = new JSONObject();
+        try {
+            switch(focusEvent) {
+                case AudioManager.AUDIOFOCUS_GAIN:
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE:
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+                    obj.put("type", "audiofocusgain");
+                break;
+                case AudioManager.AUDIOFOCUS_LOSS:
+                    obj.put("type", "audiofocusloss");
+                break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                    obj.put("type", "audiofocuslosstransient");
+                break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                    obj.put("type", "audiofocuslosstransientcanduck");
+                break;
+            }
+            
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+        }
+        sendUpdate(obj, true);
     }
 
     /**

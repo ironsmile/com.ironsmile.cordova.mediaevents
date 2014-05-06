@@ -34,14 +34,22 @@ var cordova = require('cordova'),
     exec = require('cordova/exec');
 
 function handlers() {
-    return mediaevents.channels.becomingnoisy.numHandlers;
+    return mediaevents.channels.becomingnoisy.numHandlers +
+    mediaevents.channels.audiofocusgain.numHandlers +
+    mediaevents.channels.audiofocusloss.numHandlers +
+    mediaevents.channels.audiofocuslosstransient.numHandlers +
+    mediaevents.channels.audiofocuslosstransientcanduck.numHandlers;
 }
 
 var MediaEvents = function() {
 
     // Create new event handlers on the window (returns a channel instance)
     this.channels = {
-        becomingnoisy: cordova.addWindowEventHandler("becomingnoisy")
+        becomingnoisy: cordova.addWindowEventHandler("becomingnoisy"),
+        audiofocusgain: cordova.addWindowEventHandler("audiofocusgain"),
+        audiofocusloss: cordova.addWindowEventHandler("audiofocusloss"),
+        audiofocuslosstransient: cordova.addWindowEventHandler("audiofocuslosstransient"),
+        audiofocuslosstransientcanduck: cordova.addWindowEventHandler("audiofocuslosstransientcanduck")
     };
     
     for (var key in this.channels) {
